@@ -34,7 +34,7 @@ function displayHTMLTable(results){
                 geometry: new ol.geom.Point(ol.proj.fromLonLat([a.to_deg().lngd,a.to_deg().latd])),
                 name: cells[1]
             });
-            iconFeature.set('style', createStyle('icon.png', undefined));
+            iconFeature.set('style', createStyle('images/icon.png', undefined));
             features.push(iconFeature);
             
             // / CREAR PUNTOS PARA EL MAPA
