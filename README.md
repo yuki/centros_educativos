@@ -11,9 +11,15 @@ Y cargar el fichero **dirgennouniv.csv**. La idea es que se cargue automáticame
 
 ## Software utilizado:
 - Openlayers: https://openlayers.org/
+    - Para el mapa
 - Jquery: https://jquery.com/
-- Bootstrap: https://getbootstrap.com/docs/5.0/getting-started/download/  (es necesario para el popup, y de paso, queda bonito)
+    - Para la vida en general :p
+- Bootstrap: https://getbootstrap.com/docs/5.0/getting-started/download/  
+    - Es necesario para el popup, y de paso, queda bonito :D
+- Papaparse: https://www.papaparse.com/
+    - Parsear el CSV
 - UTM conversor:
+    - Convierte las coordenadas UTM a latitud y longitud
     http://youtim.js.org/
     https://github.com/mortonfox/YouTim/wiki/API-Reference
 
