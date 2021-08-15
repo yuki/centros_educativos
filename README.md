@@ -1,27 +1,29 @@
-# Filtrando Opendata
-Listado y mapa de los centros escolares del gobierno vasco. En el mapa sólo salen los públicos
+# Filtrando Opendata Euskadi
+Listado y mapa de los centros escolares del gobierno vasco obtenidos de la web [Opendata Euskadi](https://opendata.euskadi.eus/catalogo/-/centros-docentes-no-universitarios-euskadi/). El CSV está descargado en este proyecto.
 
-Para que funcione, ejecutar:
+En el mapa sólo salen los centros públicos ([mirar aquí](https://github.com/yuki/centros_educativos/blob/main/js/centros.js#L25)).
+
+Demo: https://yuki.github.io/centros_educativos/
+
+Para que funcione en local, Python nos facilita la labor:
 ```
 python3 -m http.server 8000
 ```
-
-Y cargar el fichero **dirgennouniv.csv**. La idea es que se cargue automáticamente, pero esto es una prueba de concepto.
 
 
 ## Software utilizado:
 - Openlayers: https://openlayers.org/
     - Para el mapa
 - Jquery: https://jquery.com/
-    - Para la vida en general :p
+    - Para la vida en general :-D
 - Bootstrap: https://getbootstrap.com/docs/5.0/getting-started/download/  
     - Es necesario para el popup, y de paso, queda bonito :D
 - Papaparse: https://www.papaparse.com/
     - Parsear el CSV
 - UTM conversor:
     - Convierte las coordenadas UTM a latitud y longitud
-    http://youtim.js.org/
-    https://github.com/mortonfox/YouTim/wiki/API-Reference
+      - http://youtim.js.org/
+      - https://github.com/mortonfox/YouTim/wiki/API-Reference
 
 
 ## Enlaces de interés
