@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="./css/ol.css" type="text/css">
 
     <script src="./js/utmconv.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.2/proj4.min.js"></script>
 
     <script src="./js/centros.js"></script>
 
@@ -39,36 +40,92 @@
 </html>
 
 <script type="text/javascript">
-  $(document).ready(function(){
+  //proj4.defs([ [ 'EPSG:32647', '+proj=utm +zone=30 +ellps=WGS84 +datum=WGS84 +units=m +no_defs' ] ]);
+
+
+centerLongitudeLatitude = new ol.proj.fromLonLat([-2.9407383, 43.2576896]);
+// kudos of distance to: https://stackoverflow.com/questions/58067660/how-do-i-correctly-set-a-circles-radius-in-openlayers-for-a-specific-unit-of-me#58073291
+// 25 means 25km
+radius_distance = 25*1000/ol.proj.getPointResolution('EPSG:3857', 1, centerLongitudeLatitude);
+const circleFeature = new ol.Feature({
+  geometry: new ol.geom.Circle(centerLongitudeLatitude, radius_distance)
+});
+// del ejemplo https://openlayers.org/en/latest/examples/custom-circle-render.html
+circleFeature.setStyle(
+  new ol.style.Style({
+    renderer(coordinates, state) {
+      const [[x, y], [x1, y1]] = coordinates;
+      const ctx = state.context;
+      const dx = x1 - x;
+      const dy = y1 - y;
+      const radius = Math.sqrt(dx * dx + dy * dy);
+
+      const innerRadius = 0;
+      const outerRadius = radius * 1.4;
+
+      // const gradient = ctx.createRadialGradient(
+      //   x,
+      //   y,
+      //   innerRadius,
+      //   x,
+      //   y,
+      //   outerRadius
+      // );
+      // gradient.addColorStop(0, 'rgba(255,0,0,0)');
+      // gradient.addColorStop(0.6, 'rgba(255,0,0,0.2)');
+      // gradient.addColorStop(1, 'rgba(255,0,0,0.8)');
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
+      // ctx.fillStyle = gradient;
+      // ctx.fill();
+
+      ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
+      ctx.strokeStyle = 'rgba(255,0,0,1)';
+      ctx.stroke();
+    },
+  })
+);
+
+
+
+var map = new ol.Map({
+  target: 'map',
+  layers: [
+    new ol.layer.Tile({
+      source: new ol.source.OSM(),
+      visible: true,
+    }),
+    new ol.layer.Vector({
+      source: new ol.source.Vector({
+        features: [circleFeature],
+      }),
+    }),
+  ],
+  view: new ol.View({
+    //projection: 'EPSG:4326', //for UTM ??? 
+    center: ol.proj.fromLonLat([-2.4, 43.2455638]),
+    zoom:10,
+  })
+});
+
+
+$(document).ready(function(){
+    // si usamos el fichero adjunto al proyecto
     Papa.parse("dirgennouniv.csv",{
         download: true,
         delimiter: ";",
         complete: displayHTMLTable,
-
     });
+
     //altenativa usando AJAX con jquery:
-//    $.ajax({url: "dirgennouniv.csv", success: function(result){
-//        $("#parsed_csv_list").html(result);
-//          Papa.parse($("#parsed_csv_list").html(),{
-//                  delimiter: ";",
-//                  complete: displayHTMLTable,
-//          });
-//
-//    }});
+    // $.ajax({url: "https://opendata.euskadi.eus/contenidos/ds_localizaciones/centros_docentes_no_universit/es_euskadi/adjuntos/dirgennouniv.csv", success: function(result){
+    //     $("#parsed_csv_list").html(result);
+    //       Papa.parse($("#parsed_csv_list").html(),{
+    //         delimiter: ";",
+    //         complete: displayHTMLTable,
+    //       });
+    // }});
      
-  });
-  var map = new ol.Map({
-     target: 'map',
-     layers: [
-       new ol.layer.Tile({
-         source: new ol.source.OSM()
-       })
-     ],
-     view: new ol.View({
-       //projection: 'EPSG:4326', for UTM ??? 
-       center: ol.proj.fromLonLat([-2.4, 43.2455638]),
-       zoom:10,
-     })
   });
 
 </script>

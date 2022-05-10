@@ -22,8 +22,10 @@ function displayHTMLTable(results){
         var row = data[i];
         var cells = row.join(",").split(",");
         
-        if ( cells[3] == "IES" || cells[3] == "DGENRC"){
-
+        // if ( cells[3] == "IES" || cells[3] == "DGENRC"){
+        // para entender las abreviaciones: https://www.euskadi.eus/contenidos/informacion/conceptos_directorio/es_def/adjuntos/e23siglas_deno_cen_c.pdf
+        ignore = ["CAAPD","CAED","CAEM","CAPM","CASDI","CASM","CEBAD","CEE","CEIP","CEPA","CPD","CPE","CPED","CPM","EASD","EEI","EIC","EIMU","EMPU","EOI","IMFPB"]
+        if ( cells[12] != "PRIVADA" && !ignore.includes(cells[3])){
             table+= "<tr>";
     
             // CREAR PUNTOS PARA EL MAPA
