@@ -11,7 +11,7 @@ function createStyle(src, img) {
 }
 
 function displayHTMLTable(results){
-    var table = "<table class='table table-striped'>";
+    var table = '<table class="table table-striped table-hover" data-height="460" data-show-toggle="true" data-buttons="buttons"    >';
     var data = results.data;
     var features = [];
 
@@ -20,12 +20,17 @@ function displayHTMLTable(results){
             table += "<thead class='table-dark'>";
         }
         var row = data[i];
-        var cells = row.join(",").split(",");
+        // var row = [decoder.decode(encoder.encode(data[i]))];
+        //console.log(encoder.encode(data[i].normalize('NFC')));
+        //console.log(row);
+        
+        //var cells = row.join(",").split(",");
+        var cells = row;
         
         // if ( cells[3] == "IES" || cells[3] == "DGENRC"){
         // para entender las abreviaciones: https://www.euskadi.eus/contenidos/informacion/conceptos_directorio/es_def/adjuntos/e23siglas_deno_cen_c.pdf
-        ignore = ["CAAPD","CAED","CAEM","CAPM","CASDI","CASM","CEBAD","CEE","CEIP","CEPA","CPD","CPE","CPED","CPM","EASD","EEI","EIC","EIMU","EMPU","EOI","IMFPB"]
-        if ( cells[12] != "PRIVADA" && !ignore.includes(cells[3])){
+        // ignore = ["CAAPD","CAED","CAEM","CAPM","CASDI","CASM","CEBAD","CEE","CEIP","CEPA","CPD","CPE","CPED","CPM","EASD","EEI","EIC","EIMU","EMPU","EOI","IMFPB"]
+        //if ( cells[12] != "PRIVADA" && !ignore.includes(cells[3])){
             table+= "<tr>";
     
             // CREAR PUNTOS PARA EL MAPA
@@ -42,15 +47,17 @@ function displayHTMLTable(results){
             // / CREAR PUNTOS PARA EL MAPA
              
             for(j=0;j<cells.length;j++){
-                if (j==0 || j == 1 || j == 3 || j == 5 || j == 7 || j == 9 || j == 14 || j == 15 || j == 16 || j == 18 || j == 19 || j==12 || j==3 ){
+                //if (j==0 || j == 1 || j == 3 || j == 5 || j == 7 || j == 9 || j == 14 || j == 15 || j == 16 || j == 18 || j == 19 || j==12 || j==3 ){
                     table+= "<td>";
-                    table+= cells[j];
+                    //console.log(decoder.decode(encoder.encode(cells[j])));
+                    //table+= decoder.decode(encoder.encode(cells[j]));
+                    table += cells[j];
                     table+= "</th>";
-                }
+                //}
             }
 
             table+= "</tr>";
-        }
+        //}
     
         if (i==0){
             table += "</thead>";

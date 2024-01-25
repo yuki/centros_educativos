@@ -12,6 +12,8 @@ python3 -m http.server 8000
 
 
 ## Software utilizado:
+- Bootstrap-Table: https://bootstrap-table.com/
+    - Incluídos varios de sus plugins
 - Openlayers: https://openlayers.org/
     - Para el mapa
 - Jquery: https://jquery.com/
