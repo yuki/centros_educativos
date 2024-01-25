@@ -19,8 +19,6 @@
     <script src="./js/utmconv.js"></script>
     <script src="./js/proj4.min.js"></script>
 
-    <script src="./js/centros.js"></script>
-
     <title>Centros de enseñanza secundaria públicos del Gobierno Vasco</title>
 
     <style>
@@ -58,9 +56,10 @@
         >
           <thead class="table-dark">
             <tr>
-              <th data-field="CCEN" data-sortable="true" data-filter-control="input">Código</th>
+              <th data-field="CCEN" data-width="50" data-sortable="true" data-filter-control="input">Código</th>
               <th data-field="NOME" data-sortable="true" data-filter-control="input">Nombre</th>
-              <th data-field="DGENRC" data-sortable="true" data-filter-control="select">Tipo de Centro</th>
+              <th data-field="DGENRC" data-sortable="true" data-filter-control="select">Tipo de Centro <i class="bi bi-info-circle-fill" onclick="window.open('https://www.euskadi.eus/contenidos/informacion/conceptos_directorio/es_def/adjuntos/e23siglas_deno_cen_c.pdf','_href')"></i>
+              </th>
               <th data-field="DMUNIC" data-sortable="true" data-filter-control="select">Municipio</th>
               <th data-field="DTERRC" data-sortable="true" data-filter-control="select">Territorio</th>
               <th data-field="DOMI" data-sortable="true" data-filter-control="input">Dirección</th>
@@ -76,104 +75,156 @@
 </html>
 
 <script type="text/javascript">
-  // obtenemos el fichero CSV
+
+  //map object
+  var map = new ol.Map({
+    target: 'map',
+    layers: [
+      new ol.layer.Tile({
+        source: new ol.source.OSM(),
+        visible: true,
+      }),
+    ],
+    view: new ol.View({
+      //projection: 'EPSG:4326', //for UTM ???
+      center: ol.proj.fromLonLat([-2.654888, 43.0014948]),
+      zoom:9,
+    })
+  });
+
+  // popup
+  var popup_element = document.getElementById('popup');
+  var popup = new ol.Overlay({
+    element: popup_element,
+    positioning: 'bottom-center',
+    stopEvent: false,
+    //offset: [0, -50],
+  });
+  map.addOverlay(popup);
+
+  // display popup on click
+  map.on('click', function (evt) {
+    var feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+      return feature;
+    });
+    // disable popup
+    $(popup_element).popover('dispose')
+    if (feature) {
+      var coordinates = feature.getGeometry().getCoordinates();
+      popup.setPosition(coordinates);
+      // create popup
+      $(popup_element).popover({
+        placement: 'top',
+        html: true,
+        // what information will show the popup
+        content: `<ul>
+          <li>`+feature.get('tc')+" "+feature.get('name')+`</li>
+          <li><b>Dir:</b> `+feature.get('address')+" <b>cp:</b>"+feature.get('cp')+`</li>
+          <li>`+feature.get('municipio')+`</li>
+          <li>`+feature.get('territorio')+`</li>
+          <li><b>Teléfono:</b> `+feature.get('tel')+`</li>
+          <li>`+feature.get('mail')+`</li></ul>`,
+      });
+      // show popup
+      $(popup_element).popover('show');
+    }
+  });
+
+  map.on('movestart', ()=>{$(popup_element).popover('dispose')});
+
+
   $(document).ready(function(){
+    // get the CSV file and parse it
     Papa.parse("https://opendata.euskadi.eus/contenidos/ds_localizaciones/centros_docentes_no_universit/es_euskadi/adjuntos/dirgennouniv.csv",{
       download: true,
       delimiter: ";",
       skipEmptyLines:true,
       header:true,
       complete: function(results, file) {
-        // cuando esté parseado, se rellena la Bootstrap-table con los datos
+        // when finish, create the Bootstrp-Table with the data
         var $table = $('#table')
-        $table.bootstrapTable({data: results.data})
+        $table.bootstrapTable({
+          data: results.data,
+          // event and which function to call.
+          onPostBody: onPostBody
+        })
       },
     });
 
   });
 
-  // para el buscador de Bootstrap-table
+  // Bootstrap-table
   function queryParams() {
     var params = {}
     $('#toolbar').find('input[name]').each(function () {
-      params[$(this).attr('name')] = $(this).val()
+      params[$(this).attr('name')] = $(this).val();
     })
     return params
   }
 
+  // called when Bootstrap-table is created or when a search action
+  function onPostBody(data){
+    // all points to add for the map.
+    var points = [];
 
+    data.forEach(element => {
+      coords = new UTMConv.UTMCoords(30, element['COOR_X'],element['COOR_Y'])
+      var iconFeature = new ol.Feature({
+          geometry: new ol.geom.Point(ol.proj.fromLonLat([coords.to_deg().lngd,coords.to_deg().latd])),
+          name: element['NOME'],
+          tc: element['DGENRC'],
+          municipio: element['DMUNIC'],
+          territorio: element['DTERRC'],
+          address: element['DOMI'],
+          cp: element['CPOS'],
+          tel: element['TEL'],
+          mail: element['EMAIL'],
+      });
 
+      // style to add bootstrap-icon in a layer
+      iconFeature.set('style', new ol.style.Style({
+        text: new ol.style.Text({
+            text: '\uF3E7',
+            fill: new ol.style.Fill({color: 'red'}),
+            stroke: new ol.style.Stroke({color: 'black', width: 3}),
+            font: '25px bootstrap-icons'
+        })
+      }))
 
+      // add new geoposition into the array
+      points.push(iconFeature);
+    });
 
-//   //proj4.defs([ [ 'EPSG:32647', '+proj=utm +zone=30 +ellps=WGS84 +datum=WGS84 +units=m +no_defs' ] ]);
+    // new layer to add all points
+    var layer = new ol.layer.Vector({
+        style: function (feature) {
+            return feature.get('style');
+        },
+        source: new ol.source.Vector({
+            features: points
+        })
+    });
+    // set layer name
+    layer.set("name","points");
+    // clean previous layers
+    clearAllLayers();
+    // add layer into the map
+    map.addLayer(layer);
+  }
 
-
-centerLongitudeLatitude = new ol.proj.fromLonLat([-2.9407383, 43.2576896]);
-// kudos of distance to: https://stackoverflow.com/questions/58067660/how-do-i-correctly-set-a-circles-radius-in-openlayers-for-a-specific-unit-of-me#58073291
-// 25 means 25km
-radius_distance = 25*1000/ol.proj.getPointResolution('EPSG:3857', 1, centerLongitudeLatitude);
-const circleFeature = new ol.Feature({
-  geometry: new ol.geom.Circle(centerLongitudeLatitude, radius_distance)
-});
-// del ejemplo https://openlayers.org/en/latest/examples/custom-circle-render.html
-circleFeature.setStyle(
-  new ol.style.Style({
-    renderer(coordinates, state) {
-      const [[x, y], [x1, y1]] = coordinates;
-      const ctx = state.context;
-      const dx = x1 - x;
-      const dy = y1 - y;
-      const radius = Math.sqrt(dx * dx + dy * dy);
-
-      const innerRadius = 0;
-      const outerRadius = radius * 1.4;
-
-      // const gradient = ctx.createRadialGradient(
-      //   x,
-      //   y,
-      //   innerRadius,
-      //   x,
-      //   y,
-      //   outerRadius
-      // );
-      // gradient.addColorStop(0, 'rgba(255,0,0,0)');
-      // gradient.addColorStop(0.6, 'rgba(255,0,0,0.2)');
-      // gradient.addColorStop(1, 'rgba(255,0,0,0.8)');
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
-      // ctx.fillStyle = gradient;
-      // ctx.fill();
-
-      ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
-      ctx.strokeStyle = 'rgba(255,0,0,1)';
-      ctx.stroke();
-    },
-  })
-);
-
-
-
-var map = new ol.Map({
-  target: 'map',
-  layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM(),
-      visible: true,
-    }),
-    new ol.layer.Vector({
-      source: new ol.source.Vector({
-        features: [circleFeature],
-      }),
-    }),
-  ],
-  view: new ol.View({
-    //projection: 'EPSG:4326', //for UTM ??? 
-    center: ol.proj.fromLonLat([-2.4, 43.2455638]),
-    zoom:10,
-  })
-});
-
-
+  // delete all map-layers with name "points"
+  function clearAllLayers() {
+    this.map.getLayers().getArray().slice().forEach((layer) => {
+      console.log(layer);
+      if (layer !== undefined) {
+        console.log(layer.get("name"));
+        if (layer.get("name") === "points") {
+          layer.getSource().clear();
+          this.map.removeLayer(layer);
+        }
+      }
+    });
+  }
 
 </script>
 
