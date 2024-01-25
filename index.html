@@ -135,7 +135,8 @@
 
   $(document).ready(function(){
     // get the CSV file and parse it
-    Papa.parse("https://opendata.euskadi.eus/contenidos/ds_localizaciones/centros_docentes_no_universit/es_euskadi/adjuntos/dirgennouniv.csv",{
+    // original source: https://opendata.euskadi.eus/contenidos/ds_localizaciones/centros_docentes_no_universit/es_euskadi/adjuntos/dirgennouniv.csv
+    Papa.parse("dirgennouniv.csv",{
       download: true,
       delimiter: ";",
       skipEmptyLines:true,
