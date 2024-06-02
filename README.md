@@ -1,7 +1,6 @@
 # Filtrando Opendata Euskadi
 Listado y mapa de los centros escolares del gobierno vasco obtenidos de la web [Opendata Euskadi](https://opendata.euskadi.eus/catalogo/-/centros-docentes-no-universitarios-euskadi/). El CSV está descargado en este proyecto.
 
-En el mapa sólo salen los centros públicos ([mirar aquí](https://github.com/yuki/centros_educativos/blob/main/js/centros.js#L25)).
 
 Demo: https://yuki.github.io/centros_educativos/
 
